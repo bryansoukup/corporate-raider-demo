@@ -105,7 +105,13 @@ h1{font-family:"Playfair Display";font-style:italic;font-size:clamp(44px,10vw,84
 .row{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
 #mute{position:absolute;right:10px;top:calc(max(env(safe-area-inset-top),10px) + 64px);z-index:20;background:rgba(11,6,24,.7);color:#fff;border:1px solid #fff4;border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer}
 @media (max-width:640px){.zone{top:auto;bottom:96px;height:96px;width:44vw;flex-direction:row}.zone svg{width:44px}.zone .s{display:none}#zkeep{left:3vw}#zshred{right:3vw}#doc{top:47%}#floorbar{width:70px}#floor{font-size:24px}.btn{min-width:0;flex:1}}
-body.menu #hud,body.menu #ctrl,body.menu .zone,body.menu #doc{opacity:0;pointer-events:none}
+#modban{position:absolute;left:50%;top:22%;transform:translate(-50%,-20px);opacity:0;transition:.3s;pointer-events:none;z-index:30;background:rgba(11,6,24,.92);border:2px solid var(--cyan);border-radius:14px;padding:10px 18px;text-align:center;font-family:Bungee;color:var(--cyan);font-size:13px;letter-spacing:.08em;max-width:90vw}#modban b{display:block;color:var(--gold);font-size:22px;margin:4px 0}#modban span{display:block;font-family:system-ui,sans-serif;letter-spacing:0;color:#fff;font-size:13px}#modban.on{opacity:1;transform:translate(-50%,0)}
+#modpill{position:absolute;left:10px;bottom:10px;font:11px Bungee;color:var(--cyan);opacity:.75;pointer-events:none;letter-spacing:.06em}
+.logo{width:min(380px,80%);display:block;margin:0 auto 6px;filter:drop-shadow(0 0 18px rgba(255,63,164,.5))}
+.btn.wl{display:inline-block;text-decoration:none;background:linear-gradient(180deg,#67c1f5,#2a6fb0);color:#fff;box-shadow:0 4px 0 #123a63;font-size:15px}
+@media (max-width:640px){.logo{width:200px;margin-top:8px}}
+@media (max-width:640px){#modpill{bottom:auto;top:62px;left:50%;transform:translateX(-50%)}}
+body.menu #modpill,body.menu #hud,body.menu #ctrl,body.menu .zone,body.menu #doc{opacity:0;pointer-events:none}
 </style>
 </head>
 <body class="menu">
@@ -124,21 +130,25 @@ body.menu #hud,body.menu #ctrl,body.menu .zone,body.menu #doc{opacity:0;pointer-
   <div id="call"><img src="art/morty.jpg" alt="Morty"><div><div class="who">📞 MORTY · YOUR LAWYER</div><div class="say" id="say"></div></div></div>
   <div id="jam"><div class="big">JAMMED!</div><div class="sub">MASH SPACE / TAP ANYWHERE</div><div id="jambar"><div id="jamfill"></div></div></div>
   <div id="vig"></div>
+  <div id="modban"></div><div id="modpill"></div>
   <div id="feds"></div>
 
   <div class="screen" id="title" style="display:flex"><div class="card">
-    <div class="kick">GOING HOSTILE · SIDE GAME PREVIEW</div>
+    <img class="logo" src="art/logo.png" alt="Going Hostile"><div class="kick">A GOING HOSTILE SIDE GAME · FREE PREVIEW</div>
     <h1>The Shredder</h1>
     <div class="tag">THE FEDS ARE IN THE ELEVATOR.</div>
     <div class="rules"><div class="rule rk"><b>← KEEP</b>Alibis and clean paperwork. The feds should find these.</div><div class="rule rs"><b>SHRED →</b>Anything that could put you in prison.</div></div>
     <div style="font-size:13px;opacity:.85">Swipe, drag, tap the buttons or use the arrow keys. You have until the elevator reaches 40.</div>
     <button class="btn go" id="start">SHRED LIKE YOUR FREEDOM DEPENDS ON IT</button>
-    <div class="small">About 60 seconds · sound on 🔊 · free preview, no account<br>Art made with AI. SFX: Kenney (CC0). Music: synthesized in your browser. Satire. All characters and companies are fictional.<br><a href="../../">← Back to the free demo</a></div>
+    <div class="row" style="margin-top:10px"><a class="btn wl" href="#">★ WISHLIST ON STEAM</a></div>
+    <div style="font-size:12px;opacity:.8;margin-top:8px">Every run rolls a random twist: Audit Season, Happy Hour, Cheap Shredder and more.</div>
+    <div class="small">About 60 seconds · sound on 🔊 · free preview, no account<br>Art made with AI. SFX: Kenney (CC0). Music: synthesized in your browser. Satire. All characters and companies are fictional.<br><a class="backlink" href="../../">← Back to the free demo</a></div>
   </div></div>
 
   <div class="screen" id="end"><div style="display:flex;flex-direction:column;align-items:center;width:100%">
     <div class="paper" id="paper"></div>
     <div class="row"><button class="btn go" id="again" style="margin-top:0">SHRED AGAIN</button><button class="btn bk" id="copy">COPY RESULT</button></div>
+    <div class="row" style="margin-top:8px"><a class="btn wl" href="#">★ WISHLIST ON STEAM</a></div>
   </div></div>
   <button id="mute">🔊 sound</button>
 </div>
@@ -149,7 +159,8 @@ const stage=$('#stage'),docEl=$('#doc'),fx=$('#fx'),ctx=fx.getContext('2d');
 /* ---------- audio ---------- */
 let AC=null,master=null,muted=false,musicTimer=null,step=0,bpm=112;
 const sfx={};['keep','wrong','ding','slam','slide','place','clank','glitch','combo','tick'].forEach(n=>{sfx[n]=new Audio('sfx/'+n+'.mp3');sfx[n].preload='auto'});
-function play(n,vol=0.7){if(muted)return;const a=sfx[n].cloneNode();a.volume=vol;a.play().catch(()=>{})}
+const EV=window.__ev=[];const ev=n=>EV.push([n,performance.now()]);
+function play(n,vol=0.7){ev(n);if(muted)return;const a=sfx[n].cloneNode();a.volume=vol;a.play().catch(()=>{})}
 function initAudio(){if(AC)return;AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=0.5;master.connect(AC.destination)}
 function tone(f,t,d,type='sawtooth',v=0.12,cut=1800){const o=AC.createOscillator(),g=AC.createGain(),fl=AC.createBiquadFilter();o.type=type;o.frequency.value=f;fl.type='lowpass';fl.frequency.value=cut;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.001,t+d);o.connect(fl);fl.connect(g);g.connect(master);o.start(t);o.stop(t+d+0.02)}
 function noise(t,d,v=0.08,hp=6000){const b=AC.createBuffer(1,AC.sampleRate*d,AC.sampleRate),c=b.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='highpass';f.frequency.value=hp;const g=AC.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.001,t+d);s.connect(f);f.connect(g);g.connect(master);s.start(t)}
@@ -163,27 +174,122 @@ function musicTick(){if(!AC||muted)return;const t=AC.currentTime+0.02,bar=Math.f
  step++;}
 function startMusic(){stopMusic();step=0;const loop=()=>{musicTick();musicTimer=setTimeout(loop,60000/bpm/4)};loop()}
 function stopMusic(){clearTimeout(musicTimer)}
-function shredSound(){if(!AC||muted)return;const t=AC.currentTime;noise(t,0.45,0.22,900);tone(55,t,0.45,'sawtooth',0.12,400);tone(110,t,0.45,'square',0.04,800)}
-function ring(){if(!AC||muted)return;const t=AC.currentTime;for(let i=0;i<4;i++){tone(1320,t+i*0.09,0.07,'square',0.05,4000);tone(1100,t+i*0.09+0.045,0.07,'square',0.05,4000)}}
+function shredSound(){ev('shred');if(!AC||muted)return;const t=AC.currentTime;noise(t,0.45,0.22,900);tone(55,t,0.45,'sawtooth',0.12,400);tone(110,t,0.45,'square',0.04,800)}
+function ring(){ev('ring');if(!AC||muted)return;const t=AC.currentTime;for(let i=0;i<4;i++){tone(1320,t+i*0.09,0.07,'square',0.05,4000);tone(1100,t+i*0.09+0.045,0.07,'square',0.05,4000)}}
 $('#mute').onclick=()=>{muted=!muted;$('#mute').textContent=muted?'🔇 muted':'🔊 sound';if(muted)stopMusic();else if(state==='play')startMusic()};
 /* ---------- content ---------- */
-const DIRT=[['Napkin: "Buy Anacon before Tuesday"','Insider tip in lipstick. Signed with a heart.'],['Swiss Account #00069','Balance: yes.'],['Memo: "Delete This Memo"','Distribution: everyone.'],['Polaroid: You + Senator on a Yacht','Both of you are wearing the same captain hat.'],['Bribe Ledger (Itemized, Alphabetized)','Color-coded. You were very organized.'],['Fake Audit, Draft 7','"Make the numbers sexier" — you, in the margin.'],['Fax: "MERGER FRIDAY. TELL NO ONE."','Sent to 214 people.'],['Offshore Shell Co. Org Chart','Shell company owns a shell company that owns a boat.'],["Rival's Stolen Rolodex",'Still smells like his cologne.'],['Rehearsal Notes for Congress','"Look sad. Say you don\'t recall."'],['Cayman Postcard: "Wish You Were Here (Illegally)"','From your accountant.'],['Receipt: 40 Cases of Champagne → "Office Supplies"','Expense code: STAPLES.'],['Tape: Your Voicemail Admitting Everything','You were very proud on this tape.'],['Polaroid: You at the Velvet Rope Club, 4 AM','With the guy you said you\'d never met.']];
-const CLEAN=[['Golf Scorecard (Your Alibi)','Shot a 74 the day of the "incident." Witnessed by a caddie.'],['Charity Gala Receipt','$500 for orphaned ponies. Tax-deductible. Legit.'],["Mom's Birthday Card",'"So proud of my little businessman." Shredding this is a crime of its own.'],['Clean Tax Return, 1984','Boring. Beautiful. Keep it.'],["Morty's Retainer Agreement",'Attorney-client privilege. Your lawyer will want this.'],['Dentist Appointment Card (Alibi)','You were getting a crown that day. Ironic.'],['Signed Caddie Statement','"He was with me all day. He tipped badly."'],['Employee of the Month Photo','It\'s you. You made the plaque yourself. Still legal.'],['Lease for a Studio in Queens','Proof you once lived like a normal person.'],['Annual Report (Honest Version)','Printed once. For the feds.']];
+const DIRT=[
+['Napkin: "Buy Anacon before Tuesday"','Insider tip in lipstick. Signed with a heart.'],
+['Swiss Account #00069','Balance: yes.'],
+['Memo: "Delete This Memo"','Distribution: everyone.'],
+['Polaroid: You + Senator on a Yacht','Both of you are wearing the same captain hat.'],
+['Bribe Ledger (Itemized, Alphabetized)','Color-coded. You were very organized.'],
+['Fake Audit, Draft 7','"Make the numbers sexier" — you, in the margin.'],
+['Fax: "MERGER FRIDAY. TELL NO ONE."','Sent to 214 people.'],
+['Offshore Shell Co. Org Chart','Shell company owns a shell company that owns a boat.'],
+["Rival's Stolen Rolodex",'Still smells like his cologne.'],
+['Rehearsal Notes for Congress','"Look sad. Say you don\'t recall."'],
+['Cayman Postcard: "Wish You Were Here (Illegally)"','From your accountant.'],
+['Receipt: 40 Cases of Champagne → "Office Supplies"','Expense code: STAPLES.'],
+['Tape: Your Voicemail Admitting Everything','You were very proud on this tape.'],
+['Polaroid: You at the Velvet Rope Club, 4 AM','With the guy you said you\'d never met.'],
+['Second Set of Books','The fun set.'],
+['Post-it: "Shred This Post-it"','Stuck to the shredder. Ironic.'],
+['VIGOR™ Nasal Mist Invoice, Qty 400','Billed as "client hospitality." Clients: you.'],
+['Wire Transfer to "Definitely Not a Bribe LLC"','Memo line: "definitely not a bribe."'],
+['Floppy Disk Labeled "CRIMES.DOC"','5¼ inches of probable cause.'],
+['Phone Log: 31 Calls to the SEC Mailroom Guy','He has a new Corvette.'],
+['Board Minutes (Real Version)','Item 4: "lie about items 1–3."'],
+['Pension Fund Raid Flowchart','Arrow labeled "THE OLD PEOPLE\'S MONEY" points to "BOAT."'],
+['Limo Receipt: Atlantic City, 3 AM','Passenger: "Mr. Smith." Tip: $900.'],
+['Love Letter to a Futures Contract','"I\'d short the world for you."'],
+['Matchbook With an Account Number','From a club you deny exists.'],
+['Thank-You Card From a Regulator','"Enjoyed the jet ski! XOXO"'],
+['Spreadsheet: "Who Knows What"','Column C: "Who needs to forget."'],
+['Diary: "Dear Diary, I Did a Fraud"','Day 1 of many.'],
+['Shredder Warranty (Expired)','Oh no. Oh no no.'],
+['Golden Parachute Blueprints','For a parachute. Made of gold. It will not open.'],
+['Rigged Bid, Sealed','Sealed with a wink.'],
+["Your Accountant's Resignation Letter",'"I\'m moving to a country without extradition. Good luck."'],
+['Insider Hotline Number','Written on a cocktail napkin. Area code: jail.'],
+['Polaroid: Hot Tub "Board Meeting"','Quorum: four guys and a rubber duck.'],
+['Invoice: "Consulting" ($2M, 0 Hours)','Deliverable: silence.'],
+['Fake Passport Photo','You, in a mustache you think is a disguise.'],
+['Itinerary: One-Way to Rio','Seat 1A. Bag: duffel. Contents: yes.'],
+['Note From the Doorman','"I saw nothing. Raise received."'],
+['Ticker Tape With Circled Times','All circled 5 minutes before the news.'],
+['Penny Stock Pump Script','"Mention the word GOLDMINE at least 9 times."'],
+['Voucher: Free Weekend for a Judge','"Bring the whole robe."'],
+['Bar Tab: $41,000','Line item: "Ice sculpture of yourself."'],
+['Burner Pager','Last message: "THEY KNOW."'],
+['Crayon Drawing: "Daddy\'s Secret Account"','By the intern. Very detailed.'],
+['Junk Bond Prospectus (Unedited)','Risk section: "lol."'],
+['Napkin Sketch: Pyramid','It\'s not a pyramid scheme. It\'s a triangle opportunity.'],
+['Merger Codebook','"The eagle has landed" means "buy." Everything means "buy."'],
+['Audio Cassette: "Mixtape for the Feds"','Track 1: "I Did It (Allegedly)."'],
+['Expense Report: One Lamborghini','Category: "stationery."'],
+['Envelope Marked "HUSH MONEY"','You labeled it. Why did you label it.'],
+['Confession Written in Glitter Pen','Very festive. Very admissible.'],
+];
+const CLEAN=[
+['Golf Scorecard (Your Alibi)','Shot a 74 the day of the "incident." Witnessed by a caddie.'],
+['Charity Gala Receipt','$500 for orphaned ponies. Tax-deductible. Legit.'],
+["Mom's Birthday Card",'"So proud of my little businessman." Shredding this is a crime of its own.'],
+['Clean Tax Return, 1984','Boring. Beautiful. Keep it.'],
+["Morty's Retainer Agreement",'Attorney-client privilege. Your lawyer will want this.'],
+['Dentist Appointment Card (Alibi)','You were getting a crown that day. Ironic.'],
+['Signed Caddie Statement','"He was with me all day. He tipped badly."'],
+['Employee of the Month Photo','It\'s you. You made the plaque yourself. Still legal.'],
+['Lease for a Studio in Queens','Proof you once lived like a normal person.'],
+['Annual Report (Honest Version)','Printed once. For the feds.'],
+['Gym Membership Card','Used once. Timestamped. Airtight.'],
+['Little League Sponsorship Plaque','"Go Raiders!" Wholesome. Weaponize it.'],
+['Parking Ticket, Other Side of Town','The city itself is your witness.'],
+['Pizza Receipt, Time-Stamped 9:14 PM','Extra cheese. Extra alibi.'],
+['Movie Stub: "Aliens," 7:30 Show','You cried. The usher remembers.'],
+['Thank-You Note From a Food Bank','You donated. For a tax write-off. Still counts.'],
+['Library Card','You have never used it. It looks fantastic.'],
+['Dry Cleaning Ticket','Three white suits. Back Tuesday.'],
+['Vet Bill for Your Goldfish, Dividend','Dividend is doing great.'],
+['Paid Electric Bill','Paid on time. Suspiciously law-abiding.'],
+['Wedding RSVP: "Regretfully Decline"','To your rival\'s wedding. Totally fine.'],
+['Hospital Visitor Log','You visited your uncle. On the day. Bless him.'],
+['Bowling League Scoresheet','Rolled a 212 at 8 PM. Team: The Bull Markets.'],
+['Notarized Will (Leaves Everything to Yourself)','Legal. Weird, but legal.'],
+['Certificate: Ethics Seminar Attendee','You slept through it. Attendance is attendance.'],
+['Polaroid: You Feeding Ducks','The ducks are character witnesses.'],
+['Signed SEC Compliance Form','Signed in good faith. Mostly signed.'],
+["Morty's Business Card",'"Morty. Lawyer. Discreet. Call any time." Keep it close.'],
+['Church Bake Sale Receipt','Bought 40 brownies. Nobody can prove why.'],
+['Report Card From 1964','Straight A\'s in Citizenship. Use it.'],
+['Jury Duty Summons (Completed)','You served. Ironic, given everything.'],
+['Postcard From Grandma','"Be good, sweetie." Too late. Keep anyway.'],
+];
+const MODS=[
+ {id:'none',name:'Business as Usual',desc:'A normal night of committing crimes against paper.'},
+ {id:'audit',name:'Audit Season',desc:'No stamps. Read every file. Points ×1.5.',stamps:0,mult:1.5},
+ {id:'happy',name:'Happy Hour',desc:'Feds took the express. 45 seconds. Combo builds twice as fast.',dur:45,comboStep:2},
+ {id:'jam',name:'Cheap Shredder',desc:'Jams way more often. Unjamming pays +300.',jam:0.25,unjam:300},
+ {id:'vacation',name:'Morty on Vacation',desc:'No calls from your lawyer. You are on your own.',calls:0},
+ {id:'smudge',name:'Spilled Martini',desc:'Fine print is smudged. Titles only. Points ×1.25.',noBody:true,mult:1.25},
+ {id:'ledgers',name:'Insider Week',desc:'TWO golden ledgers. Both worth ×5.',golds:2},
+];
 const CALLS=[
  {say:"Kid! The elevator's stuck between floors! You got time — <b>+6 floors</b>, shred faster!",eff:'slow'},
  {say:"Bad news, kid. They took the <b>EXPRESS</b>. Shred everything with a dollar sign!",eff:'fast'},
  {say:"Whatever you do, <b>KEEP the golf scorecard</b>. That's our whole defense!",eff:'golf'}];
 /* ---------- state ---------- */
+let MOD=MODS[0],baseDur=60,goldCount=0;const STEAM_URL=''; /* TODO: paste https://store.steampowered.com/app/<APPID>/Going_Hostile/ once the app exists */
 let state='title',T0=0,dur=60,elapsed=0,score=0,evidence=0,alibis=0,lost=0,combo=0,best=0,shredded=0,cur=null,deck=[],n=0,jamNeed=0,jamHit=0,callsDone=0,timeBonus=0,lastFloor=0,golfForced=false,goldDone=false;
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
-function buildDeck(){const d=DIRT.map(x=>({t:x[0],b:x[1],dirt:true})),c=CLEAN.map(x=>({t:x[0],b:x[1],dirt:false}));deck=shuffle(d.concat(c,shuffle(DIRT.map(x=>({t:x[0],b:x[1],dirt:true}))).slice(0,6),shuffle(CLEAN.map(x=>({t:x[0],b:x[1],dirt:false}))).slice(0,4)))}
+function buildDeck(){const d=shuffle(DIRT.map(x=>({t:x[0],b:x[1],dirt:true}))).slice(0,24),c=shuffle(CLEAN.slice(1).map(x=>({t:x[0],b:x[1],dirt:false}))).slice(0,15);c.push({t:CLEAN[0][0],b:CLEAN[0][1],dirt:false});deck=shuffle(d.concat(c))}
 function nextDoc(){if(state!=='play')return;let d;
  if(golfForced){d={t:CLEAN[0][0],b:'Morty said KEEP IT. Morty is sweating.',dirt:false};golfForced=false}
- else if(!goldDone&&elapsed>dur*0.55){d={t:'THE LEDGER',b:'Every dirty dollar since 1980. Heavy. Shredding it will jam the machine.',dirt:true,gold:true};goldDone=true}
+ else if(goldCount<(MOD.golds||1)&&elapsed>dur*((MOD.golds||1)>1?(goldCount?0.75:0.35):0.55)){d={t:goldCount?'THE OTHER LEDGER':'THE LEDGER',b:'Every dirty dollar since 1980. Heavy. Shredding it will jam the machine.',dirt:true,gold:true};goldCount++}
  else{d=deck[n%deck.length];n++}
- cur=d;const stampOn=n<10||Math.random()<0.45;const id=('00'+(Math.random()*999|0)).slice(-3);
+ cur=d;const stampOn=MOD.stamps===0?false:(n<10||Math.random()<0.45);const id=('00'+(Math.random()*999|0)).slice(-3);
  docEl.className=d.gold?'gold':'';docEl.style.transition='none';docEl.style.opacity=1;docEl.style.transform='translateY(-50%) scale(.6) rotate(-8deg)';
- docEl.innerHTML=`<div class="hdr"><span>GREED CAPITAL · FILE ${id}</span><span>${d.gold?'★':'1986'}</span></div><div class="title">${d.t}</div><div class="body">${d.b}</div>${stampOn?`<div class="stamp ${d.dirt?'dirt':'clean'}">${d.dirt?(d.gold?'BURN IT':'PRIVATE'):'ALIBI'}</div>`:''}`;
+ docEl.innerHTML=`<div class="hdr"><span>GREED CAPITAL · FILE ${id}</span><span>${d.gold?'★':'1986'}</span></div><div class="title">${d.t}</div><div class="body">${MOD.noBody&&!d.gold?'<i style="opacity:.5">(smudged with martini)</i>':d.b}</div>${stampOn?`<div class="stamp ${d.dirt?'dirt':'clean'}">${d.dirt?(d.gold?'BURN IT':'PRIVATE'):'ALIBI'}</div>`:''}`;
  requestAnimationFrame(()=>{docEl.style.transition='transform .18s cubic-bezier(.2,1.4,.4,1)';docEl.style.transform='translateY(-50%) rotate('+(Math.random()*6-3)+'deg)'});
  play('slide',0.5)}
 function pop(txt,color){const p=document.createElement('div');p.className='pop';p.textContent=txt;p.style.color=color;stage.appendChild(p);setTimeout(()=>p.remove(),800)}
@@ -194,17 +300,17 @@ function decide(shred){if(state!=='play'||!cur||jamNeed)return;const d=cur;cur=n
  docEl.style.transition='transform .22s ease-in, opacity .22s';docEl.style.transform=`translate(${shred?60:-60}vw,-50%) rotate(${shred?35:-35}deg)`;docEl.style.opacity=0;
  const zone=shred?$('#zshred'):$('#zkeep');zone.classList.add('hot');setTimeout(()=>zone.classList.remove('hot'),180);
  const correct=shred===d.dirt;
- if(correct){combo++;best=Math.max(best,combo);const mult=1+Math.floor(combo/4);score+=100*mult*(d.gold?5:1);
+ if(correct){combo++;best=Math.max(best,combo);const mult=1+Math.floor(combo*(MOD.comboStep||1)/4);score+=Math.round(100*mult*(d.gold?5:1)*(MOD.mult||1));
   if(shred){shredded++;shredSound();burst(true);pop(d.gold?'THE LEDGER IS DUST':QUIPS_OK[Math.random()*QUIPS_OK.length|0],'#ff3fa4')}else{alibis++;play('keep');burst(false);pop(QUIPS_KEEP[Math.random()*QUIPS_KEEP.length|0],'#3dff8a')}
-  if(combo>0&&combo%4===0){play('combo');pop('x'+(1+combo/4)+' COMBO — PAPER TIGER','#ffc94a')}
-  if(shred&&(d.gold||Math.random()<0.10)&&elapsed<dur-6){setTimeout(startJam,250);return hud()}
+  if(combo>0&&combo%4===0){play('combo');pop('x'+mult+' COMBO — PAPER TIGER','#ffc94a')}
+  if(shred&&(d.gold||Math.random()<(MOD.jam||0.10))&&elapsed<dur-6){setTimeout(startJam,250);return hud()}
  }else{combo=0;play('wrong',0.8);shake();flash();
   if(shred){lost++;shredSound();burst(true);pop(d.t.includes('Mom')?'YOU SHREDDED MOM?!':'ALIBI DESTROYED','#ff3b3b');score=Math.max(0,score-150)}
   else{evidence++;play('glitch');pop(d.gold?'THEY HAVE THE LEDGER':'THAT\'S EVIDENCE','#ff3b3b');score=Math.max(0,score-200)}}
  hud();setTimeout(nextDoc,200)}
 function flash(){const v=$('#vig');v.style.boxShadow='inset 0 0 120px 40px rgba(255,0,60,.7)';setTimeout(()=>v.style.boxShadow='',220)}
 function startJam(){jamNeed=7;jamHit=0;$('#jam').style.display='flex';$('#jamfill').style.width='0';play('clank',0.9);shake();sparks()}
-function hitJam(){if(!jamNeed)return;jamHit++;$('#jamfill').style.width=(jamHit/jamNeed*100)+'%';play('clank',0.4);shake();sparks();if(jamHit>=jamNeed){jamNeed=0;$('#jam').style.display='none';pop('UNJAMMED!','#ffc94a');score+=150;hud();setTimeout(nextDoc,150)}}
+function hitJam(){if(!jamNeed)return;jamHit++;$('#jamfill').style.width=(jamHit/jamNeed*100)+'%';play('clank',0.4);shake();sparks();if(jamHit>=jamNeed){jamNeed=0;$('#jam').style.display='none';pop('UNJAMMED!','#ffc94a');score+=(MOD.unjam||150);hud();setTimeout(nextDoc,150)}}
 function doCall(){const c=CALLS[callsDone===0?(Math.random()<0.5?0:1):2];callsDone++;ring();$('#say').innerHTML=c.say;$('#call').style.display='flex';
  if(c.eff==='slow')timeBonus+=dur*6/40;if(c.eff==='fast'){timeBonus-=dur*4/40;bpm=128}if(c.eff==='golf')golfForced=true;setTimeout(()=>$('#call').style.display='none',3200)}
 /* particles */
@@ -217,7 +323,7 @@ function loop(now){requestAnimationFrame(loop);drawFx();if(state!=='play')return
  elapsed=(now-T0)/1000-timeBonus;if(jamNeed)T0+=0; const f=Math.max(0,Math.min(40,Math.floor(elapsed/dur*40)));
  $('#floor').textContent=f===0?'L':f;$('#floorfill').style.width=(f/40*100)+'%';
  if(f!==lastFloor){lastFloor=f;if(f>=34){play('tick',0.5);$('#vig').style.boxShadow=`inset 0 0 ${60+f*3}px ${10+(f-34)*6}px rgba(255,0,60,.45)`;bpm=Math.max(bpm,132)}}
- if(callsDone===0&&elapsed>dur*0.3)doCall();if(callsDone===1&&elapsed>dur*0.68)doCall();
+ if(MOD.calls!==0){if(callsDone===0&&elapsed>dur*0.3)doCall();if(callsDone===1&&elapsed>dur*0.68)doCall();}
  if(elapsed>=dur)endGame()}
 requestAnimationFrame(loop);
 /* input */
@@ -231,7 +337,9 @@ addEventListener('keydown',e=>{if(e.repeat&&e.code!=='Space')return;if(jamNeed&&
  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')decide(false);if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')decide(true);
  if((e.code==='Space'||e.key==='Enter')&&state!=='play'){e.preventDefault();start()}});
 /* flow */
+let forcedMod=null;function showMod(){const b=$('#modban');b.innerHTML=`TONIGHT'S TWIST: <b>${MOD.name}</b><span>${MOD.desc}</span>`;b.className='on';clearTimeout(showMod.t);showMod.t=setTimeout(()=>b.className='',2600);$('#modpill').textContent=MOD.name}
 function start(){initAudio();if(AC.state==='suspended')AC.resume();document.body.classList.remove('menu');state='play';$('#title').style.display='none';$('#end').style.display='none';$('#feds').className='';
+ MOD=forcedMod||MODS[Math.random()*MODS.length|0];forcedMod=null;dur=MOD.dur||baseDur;goldCount=0;showMod();
  score=evidence=alibis=lost=combo=best=shredded=n=callsDone=0;timeBonus=0;bpm=112;lastFloor=0;golfForced=false;goldDone=false;jamNeed=0;$('#jam').style.display='none';$('#vig').style.boxShadow='';
  buildDeck();hud();T0=performance.now();if(!muted)startMusic();nextDoc()}
 function endGame(){state='end';cur=null;jamNeed=0;$('#jam').style.display='none';$('#call').style.display='none';stopMusic();play('ding',0.9);docEl.style.opacity=0;
@@ -243,13 +351,17 @@ function grade(){if(evidence===0&&lost===0)return{h:'FEDS FIND NOTHING BUT A GOL
 function showPaper(){document.body.classList.add('menu');const g=grade();const acc=Math.round(100*(shredded+alibis)/Math.max(1,shredded+alibis+evidence+lost));
  $('#paper').innerHTML=`<div class="mast">The Daily Ticker</div><div class="date">NEW YORK · FRIDAY, OCTOBER 17, 1986 · LATE EDITION · 25¢</div><div class="head">${g.h}</div><div class="deck">${g.d}${lost?` ${lost} alibi${lost>1?'s were':' was'} "accidentally" shredded.`:''}</div>
  <div class="stats"><div class="stat"><b>${score.toLocaleString()}</b>score</div><div class="stat"><b>${shredded}</b>shredded</div><div class="stat"><b>${evidence}</b>evidence</div><div class="stat"><b>${alibis}</b>alibis kept</div><div class="stat"><b>x${1+Math.floor(best/4)}</b>best combo</div><div class="stat"><b>${acc}%</b>accuracy</div></div>
- <div class="payoff"><b>VERDICT: ${g.tier}</b><br>Back in the main game → Heat ${g.heat>0?'+':''}${g.heat} · Morty ${g.morty} · ${g.cash}</div>`;
+ <div class="payoff"><b>VERDICT: ${g.tier}</b> <span style="opacity:.7">· twist: ${MOD.name}</span><br>Back in the main game → Heat ${g.heat>0?'+':''}${g.heat} · Morty ${g.morty} · ${g.cash}</div>`;
  try{localStorage.setItem('goingHostile.shredder',JSON.stringify({score,evidence,alibis,lost,tier:g.tier,heat:g.heat,at:Date.now()}))}catch(e){}
- window.__result={score,evidence,alibis,lost,tier:g.tier};
+ window.__result={score,evidence,alibis,lost,tier:g.tier,mod:MOD.id};
  $('#end').style.display='flex'}
 $('#start').onclick=start;$('#again').onclick=start;
 $('#copy').onclick=()=>{const r=window.__result||{};const t=`GOING HOSTILE · The Shredder\n${r.tier} · ${r.score} pts · ${r.evidence} evidence left for the feds\nhttps://bryansoukup.github.io/corporate-raider-demo/preview/shredder/`;navigator.clipboard&&navigator.clipboard.writeText(t);$('#copy').textContent='COPIED'};
-window.__shredder={decide,hitJam,get state(){return state},get cur(){return cur},get jam(){return jamNeed},setDur:v=>dur=v};
+window.__shredder={decide,hitJam,get state(){return state},get cur(){return cur},get jam(){return jamNeed},setDur:v=>{baseDur=v;dur=v},setMod:id=>{forcedMod=MODS.find(m=>m.id===id)||null},get mod(){return MOD.id}};
+/* wishlist */
+const SRC=location.hostname.includes('itch')?'itch':location.hostname.includes('github.io')?'preview':'other';
+if(SRC==='itch')document.querySelectorAll('.backlink').forEach(a=>a.style.display='none');
+document.querySelectorAll('.wl').forEach(a=>{if(STEAM_URL){a.href=STEAM_URL+'?utm_source='+SRC+'&utm_medium=shredder&utm_campaign=validation';a.target='_blank';a.rel='noopener'}else a.onclick=e=>{e.preventDefault();a.textContent='STEAM PAGE COMING SOON';setTimeout(()=>a.textContent='★ WISHLIST ON STEAM',2200)}});
 })();
 </script>
 </body>
