@@ -1,1 +1,0 @@
-var e=`/corporate-raider-demo/assets/menu-bg-yAlF2uNp.jpg`;export{e as t};

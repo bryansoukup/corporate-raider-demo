@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>The Shredder · Going Hostile (side-game preview)</title>
-<meta name="description" content="Going Hostile side-game preview: the feds are in the elevator. Shred the dirt, keep the alibis. 60 seconds.">
+<meta name="description" content="One of many side games in Going Hostile, a 1980s Wall Street tycoon satire: the feds are in the elevator. Shred the dirt, keep the alibis. 60 seconds.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=IBM+Plex+Mono:wght@500;700&family=Playfair+Display:ital,wght@1,900&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
@@ -134,13 +134,14 @@ body.menu #modpill,body.menu #hud,body.menu #ctrl,body.menu .zone,body.menu #doc
   <div id="feds"></div>
 
   <div class="screen" id="title" style="display:flex"><div class="card">
-    <img class="logo" src="art/logo.png" alt="Going Hostile"><div class="kick">A GOING HOSTILE SIDE GAME · FREE PREVIEW</div>
+    <img class="logo" src="art/logo.png" alt="Going Hostile"><div class="kick">ONE OF MANY SIDE GAMES IN GOING HOSTILE · FREE PREVIEW</div>
     <h1>The Shredder</h1>
     <div class="tag">THE FEDS ARE IN THE ELEVATOR.</div>
     <div class="rules"><div class="rule rk"><b>← KEEP</b>Alibis and clean paperwork. The feds should find these.</div><div class="rule rs"><b>SHRED →</b>Anything that could put you in prison.</div></div>
     <div style="font-size:13px;opacity:.85">Swipe, drag, tap the buttons or use the arrow keys. You have until the elevator reaches 40.</div>
     <button class="btn go" id="start">SHRED LIKE YOUR FREEDOM DEPENDS ON IT</button>
-    <div class="row" style="margin-top:10px"><a class="btn wl" href="#">★ WISHLIST ON STEAM</a></div>
+    <div style="font-size:13px;opacity:.9;margin-top:10px">The full game: trade the 80s market, raid rivals, take the calls, work the nightlife and dodge the SEC.</div>
+    <div class="row" style="margin-top:10px"><a class="btn wl" href="#">★ WISHLIST THE FULL GAME ON STEAM</a></div>
     <div style="font-size:12px;opacity:.8;margin-top:8px">Every run rolls a random twist: Audit Season, Happy Hour, Cheap Shredder and more.</div>
     <div class="small">About 60 seconds · sound on 🔊 · free preview, no account<br>Art made with AI. SFX: Kenney (CC0). Music: synthesized in your browser. Satire. All characters and companies are fictional.<br><a class="backlink" href="../../">← Back to the free demo</a></div>
   </div></div>
@@ -148,7 +149,7 @@ body.menu #modpill,body.menu #hud,body.menu #ctrl,body.menu .zone,body.menu #doc
   <div class="screen" id="end"><div style="display:flex;flex-direction:column;align-items:center;width:100%">
     <div class="paper" id="paper"></div>
     <div class="row"><button class="btn go" id="again" style="margin-top:0">SHRED AGAIN</button><button class="btn bk" id="copy">COPY RESULT</button></div>
-    <div class="row" style="margin-top:8px"><a class="btn wl" href="#">★ WISHLIST ON STEAM</a></div>
+    <div class="row" style="margin-top:8px"><a class="btn wl" href="#">★ WISHLIST THE FULL GAME</a></div>
   </div></div>
   <button id="mute">🔊 sound</button>
 </div>
@@ -356,12 +357,12 @@ function showPaper(){document.body.classList.add('menu');const g=grade();const a
  window.__result={score,evidence,alibis,lost,tier:g.tier,mod:MOD.id};
  $('#end').style.display='flex'}
 $('#start').onclick=start;$('#again').onclick=start;
-$('#copy').onclick=()=>{const r=window.__result||{};const t=`GOING HOSTILE · The Shredder\n${r.tier} · ${r.score} pts · ${r.evidence} evidence left for the feds\nhttps://bryansoukup.github.io/corporate-raider-demo/preview/shredder/`;navigator.clipboard&&navigator.clipboard.writeText(t);$('#copy').textContent='COPIED'};
+$('#copy').onclick=()=>{const r=window.__result||{};const t=`The Shredder · a Going Hostile side game\n${r.tier} · ${r.score} pts · ${r.evidence} evidence left for the feds\nhttps://bryansoukup.github.io/corporate-raider-demo/preview/shredder/`;navigator.clipboard&&navigator.clipboard.writeText(t);$('#copy').textContent='COPIED'};
 window.__shredder={decide,hitJam,get state(){return state},get cur(){return cur},get jam(){return jamNeed},setDur:v=>{baseDur=v;dur=v},setMod:id=>{forcedMod=MODS.find(m=>m.id===id)||null},get mod(){return MOD.id}};
 /* wishlist */
 const SRC=location.hostname.includes('itch')?'itch':location.hostname.includes('github.io')?'preview':'other';
 if(SRC==='itch')document.querySelectorAll('.backlink').forEach(a=>a.style.display='none');
-document.querySelectorAll('.wl').forEach(a=>{if(STEAM_URL){a.href=STEAM_URL+'?utm_source='+SRC+'&utm_medium=shredder&utm_campaign=validation';a.target='_blank';a.rel='noopener'}else a.onclick=e=>{e.preventDefault();a.textContent='STEAM PAGE COMING SOON';setTimeout(()=>a.textContent='★ WISHLIST ON STEAM',2200)}});
+document.querySelectorAll('.wl').forEach(a=>{if(STEAM_URL){a.href=STEAM_URL+'?utm_source='+SRC+'&utm_medium=shredder&utm_campaign=validation';a.target='_blank';a.rel='noopener'}else{const o=a.textContent;a.onclick=e=>{e.preventDefault();a.textContent='STEAM PAGE COMING SOON';setTimeout(()=>a.textContent=o,2200)}}});
 })();
 </script>
 </body>

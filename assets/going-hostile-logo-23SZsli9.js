@@ -1,0 +1,1 @@
+var e=`/corporate-raider-demo/assets/menu-bg-yAlF2uNp.jpg`,t=`/corporate-raider-demo/assets/going-hostile-logo-D7oeu5KW.png`;export{e as n,t};
