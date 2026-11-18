@@ -112,6 +112,8 @@ h1{font-family:"Playfair Display";font-style:italic;font-size:clamp(44px,10vw,84
 @media (max-width:640px){.logo{width:200px;margin-top:8px}}
 @media (max-width:640px){#modpill{bottom:auto;top:62px;left:50%;transform:translateX(-50%)}}
 body.menu #modpill,body.menu #hud,body.menu #ctrl,body.menu .zone,body.menu #doc{opacity:0;pointer-events:none}
+body.embed .wl,body.embed .small,body.embed #copy,body.embed #again,body.embed .noembed{display:none!important}
+body:not(.embed) #cont{display:none}
 </style>
 </head>
 <body class="menu">
@@ -140,7 +142,7 @@ body.menu #modpill,body.menu #hud,body.menu #ctrl,body.menu .zone,body.menu #doc
     <div class="rules"><div class="rule rk"><b>← KEEP</b>Alibis and clean paperwork. The feds should find these.</div><div class="rule rs"><b>SHRED →</b>Anything that could put you in prison.</div></div>
     <div style="font-size:13px;opacity:.85">Swipe, drag, tap the buttons or use the arrow keys. You have until the elevator reaches 40.</div>
     <button class="btn go" id="start">SHRED LIKE YOUR FREEDOM DEPENDS ON IT</button>
-    <div style="font-size:13px;opacity:.9;margin-top:10px">The full game: trade the 80s market, raid rivals, take the calls, work the nightlife and dodge the SEC.</div>
+    <div class="noembed" style="font-size:13px;opacity:.9;margin-top:10px">The full game: trade the 80s market, raid rivals, take the calls, work the nightlife and dodge the SEC.</div>
     <div class="row" style="margin-top:10px"><a class="btn wl" href="#">★ WISHLIST THE FULL GAME ON STEAM</a></div>
     <div style="font-size:12px;opacity:.8;margin-top:8px">Every run rolls a random twist: Audit Season, Happy Hour, Cheap Shredder and more.</div>
     <div class="small">About 60 seconds · sound on 🔊 · free preview, no account<br>Art made with AI. SFX: Kenney (CC0). Music: synthesized in your browser. Satire. All characters and companies are fictional.<br><a class="backlink" href="../../">← Back to the free demo</a></div>
@@ -148,7 +150,7 @@ body.menu #modpill,body.menu #hud,body.menu #ctrl,body.menu .zone,body.menu #doc
 
   <div class="screen" id="end"><div style="display:flex;flex-direction:column;align-items:center;width:100%">
     <div class="paper" id="paper"></div>
-    <div class="row"><button class="btn go" id="again" style="margin-top:0">SHRED AGAIN</button><button class="btn bk" id="copy">COPY RESULT</button></div>
+    <div class="row"><button class="btn go" id="again" style="margin-top:0">SHRED AGAIN</button><button class="btn bk" id="copy">COPY RESULT</button><button class="btn go" id="cont" style="margin-top:0">FACE THE MUSIC →</button></div>
     <div class="row" style="margin-top:8px"><a class="btn wl" href="#">★ WISHLIST THE FULL GAME</a></div>
   </div></div>
   <button id="mute">🔊 sound</button>
@@ -156,6 +158,8 @@ body.menu #modpill,body.menu #hud,body.menu #ctrl,body.menu .zone,body.menu #doc
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
+const EMBED=new URLSearchParams(location.search).get('embed')==='1';
+if(EMBED){document.body.classList.add('embed');const k=document.querySelector('#title .kick');if(k)k.textContent='SKYJET · YOUR OFFICE, 11 P.M.';}
 const stage=$('#stage'),docEl=$('#doc'),fx=$('#fx'),ctx=fx.getContext('2d');
 /* ---------- audio ---------- */
 let AC=null,master=null,muted=false,musicTimer=null,step=0,bpm=112;
@@ -355,8 +359,10 @@ function showPaper(){document.body.classList.add('menu');const g=grade();const a
  <div class="payoff"><b>VERDICT: ${g.tier}</b> <span style="opacity:.7">· twist: ${MOD.name}</span><br>Back in the main game → Heat ${g.heat>0?'+':''}${g.heat} · Morty ${g.morty} · ${g.cash}</div>`;
  try{localStorage.setItem('goingHostile.shredder',JSON.stringify({score,evidence,alibis,lost,tier:g.tier,heat:g.heat,at:Date.now()}))}catch(e){}
  window.__result={score,evidence,alibis,lost,tier:g.tier,mod:MOD.id};
+ if(EMBED){try{parent.postMessage({type:'gh-shredder',done:false,win:g.tier!=='PERP WALK',tier:g.tier,evidence,score},'*')}catch(e){}}
  $('#end').style.display='flex'}
-$('#start').onclick=start;$('#again').onclick=start;
+$('#start').onclick=start;
+$('#cont').onclick=()=>{const r=window.__result||{};try{parent.postMessage({type:'gh-shredder',done:true,win:r.tier!=='PERP WALK',tier:r.tier,evidence:r.evidence,score:r.score},'*')}catch(e){}};$('#again').onclick=start;
 $('#copy').onclick=()=>{const r=window.__result||{};const t=`The Shredder · a Going Hostile side game\n${r.tier} · ${r.score} pts · ${r.evidence} evidence left for the feds\nhttps://bryansoukup.github.io/corporate-raider-demo/preview/shredder/`;navigator.clipboard&&navigator.clipboard.writeText(t);$('#copy').textContent='COPIED'};
 window.__shredder={decide,hitJam,get state(){return state},get cur(){return cur},get jam(){return jamNeed},setDur:v=>{baseDur=v;dur=v},setMod:id=>{forcedMod=MODS.find(m=>m.id===id)||null},get mod(){return MOD.id}};
 /* wishlist */
