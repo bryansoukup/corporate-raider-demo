@@ -1,0 +1,1 @@
+import{c as e}from"./play-C28YFTt4.js";export{e as primeVoices};
