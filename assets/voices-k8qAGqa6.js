@@ -1,0 +1,1 @@
+import{c as e}from"./play-CGTQXEl1.js";export{e as primeVoices};
