@@ -1,0 +1,1 @@
+import{c as e}from"./play-Bdc-_I0Y.js";export{e as primeVoices};
