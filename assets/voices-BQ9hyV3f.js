@@ -1,0 +1,1 @@
+import{c as e}from"./play-GzTBv7UX.js";export{e as primeVoices};
