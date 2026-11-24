@@ -1,1 +1,0 @@
-import{l as e}from"./play-mQgneCV5.js";export{e as primeVoices};
