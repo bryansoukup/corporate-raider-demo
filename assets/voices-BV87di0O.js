@@ -1,1 +1,0 @@
-import{u as e}from"./play-BEqT5V5l.js";export{e as primeVoices};
